@@ -33,6 +33,16 @@ def firebase_fulfillment():
     return jsonify(fulfillment_response)
 
 
+@app.route('/getcomplaint/', methods=['GET'])
+def return_complaints():
+
+    user_id = request.args.get('firebase_uid')
+    db = firebase.database()
+    data = db.child("user_data").child(user_id).child("Complaints").get().val()
+    complaint_ids = data.keys()
+    return jsonify({"Status": "OK", "Data": data, "Response": 200})
+
+
 def create_complaint(data):
 
     firebase_uid = data['session'].split('/')[-1]
