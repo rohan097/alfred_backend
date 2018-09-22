@@ -63,7 +63,12 @@ def create_complaint(data):
         "Model Number": raw_params["model_number"],
         "Serial Number": raw_params["serial_number"],
         "Status": "Open",
-        "Date": date
+        "Date": date,
+        "Time Slot Chosen": "0",
+        "Time Slots": {"Slot 1": {"Time": "0", "Date": "0"},
+            "Slot 2": {"Time": "0", "Date": "0"},
+            "Slot 3": {"Time": "0", "Date": "0"}},
+        "Progress": "Under review."
         }
 
     db = firebase.database()
