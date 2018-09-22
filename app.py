@@ -74,6 +74,20 @@ def create_complaint(data):
     return firebase_response
 
 
+@app.route('/choosetimeslot/', methods=["POST"])
+def chooseTimeSlot():
+
+    req = request.json
+    firebase_uid = req["firebase_uid"]
+    complaint_id = req["complaint_id"]
+    db = firebase.database();
+    db.child("user_data").child(
+        firebase_uid).child(
+        "Complaints").child(
+        complaint_id).update({
+        "Time Slot Chosen": req["time_slot"]
+        })
+    return jsonify({"Status": "200", "Message": "successfully chosen time"})
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=3000, debug=True)
