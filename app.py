@@ -18,6 +18,7 @@ firebase = pyrebase.initialize_app(config)
 
 app = Flask(__name__)
 
+
 @app.route('/')
 def healthCheck():
     return jsonify({"Status": "OK"})
@@ -39,7 +40,6 @@ def return_complaints():
     user_id = request.args.get('firebase_uid')
     db = firebase.database()
     data = db.child("user_data").child(user_id).child("Complaints").get().val()
-    complaint_ids = data.keys()
     return jsonify({"Status": "OK", "Data": data, "Response": 200})
 
 
@@ -93,6 +93,7 @@ def chooseTimeSlot():
         "Time Slot Chosen": req["time_slot"]
         })
     return jsonify({"Status": "200", "Message": "successfully chosen time"})
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=3000, debug=True)
