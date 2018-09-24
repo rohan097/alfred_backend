@@ -45,7 +45,7 @@ def check_mobile(data):
         "followupEventInput": {
         "name": "request_mobile",
         "languageCode": "en-US"
-        }
+        }}
     else:
         print (mobile)
         response = {
