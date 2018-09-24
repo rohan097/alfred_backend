@@ -34,7 +34,21 @@ def firebase_fulfillment():
         response = create_complaint(req)
     elif action == "initiate_call":
         response = check_mobile(req);
+    elif action == "save_mobile":
+        response = save_mobile(req)
     return jsonify(response)
+
+
+def save_mobile(data):
+    firebase_uid = data['session'].split('/')[-1]
+    db = firebase.database()
+    mobile = data["queryResult"]["parameters"]["phone_number"]
+    db.child("users").child(firebase_uid).child("Mobile Number").set(str(mobile))
+    response = {
+    ""
+    }
+
+
 
 def check_mobile(data):
     firebase_uid = data['session'].split('/')[-1]
@@ -49,7 +63,11 @@ def check_mobile(data):
     else:
         print (mobile)
         response = {
-        "fulfillmentText": "Your mobile number is " + mobile
+        "fulfillmentText": "Alright. What product are you having trouble with?",
+        "followupEventInput": {
+        "name": "continue_call_details",
+        "languageCode": "en-US"
+        }
         }
     return response
 
