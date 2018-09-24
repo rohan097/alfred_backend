@@ -42,7 +42,10 @@ def check_mobile(data):
     mobile = db.child("users").child(firebase_uid).child("Mobile Number").get().val()
     if mobile == "0" or mobile == None:
         response = {
-        "followupEventInput": "request_mobile"}
+        "followupEventInput": {
+        "name": "request_mobile",
+        "languageCode": "en-US"
+        }
     else:
         print (mobile)
         response = {
