@@ -45,7 +45,11 @@ def save_mobile(data):
     mobile = data["queryResult"]["parameters"]["phone_number"]
     db.child("users").child(firebase_uid).child("Mobile Number").set(str(mobile))
     response = {
-    ""
+    "fulfillmentText": "I've saved your phone number.",
+    "followupEventInput": {
+    "name": "continue_call_details",
+    "languageCode": "en-US"
+    }
     }
 
 
@@ -63,7 +67,6 @@ def check_mobile(data):
     else:
         print (mobile)
         response = {
-        "fulfillmentText": "Alright. What product are you having trouble with?",
         "followupEventInput": {
         "name": "continue_call_details",
         "languageCode": "en-US"
