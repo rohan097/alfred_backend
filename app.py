@@ -36,6 +36,12 @@ def firebase_fulfillment():
         response = check_mobile(req);
     elif action == "save_mobile":
         response = save_mobile(req)
+    elif action == "save_call":
+        response = create_call_complaint(req)
+    else:
+        response = {
+        "fulfillmentText": "Something went wrong. Please try again later."
+        }
     return jsonify(response)
 
 
@@ -52,6 +58,56 @@ def save_mobile(data):
     }
     }
     return response
+
+
+def create_call_complaint(data):
+    firebase_uid = data['session'].split('/')[-1]
+    firebase_uid = data['session'].split('/')[-1]
+    contexts = data['queryResult']['outputContexts']
+    for i in contexts:
+        if ('call_data' in i['name']):
+            context = i
+            break
+
+    date = datetime.datetime.now()
+    date = date.strftime("%d-%m-%Y")
+
+    raw_params = context['parameters']
+
+    free_time = dict({})
+
+    free_time = {
+    "Time": raw_params["time"],
+    "Date": raw_params["date"]
+    }
+    complaint_params = {
+        "Product Type": raw_params["product_type"],
+        "Type": "Phone Call",
+        "Issue Type": raw_params["issue_type"],
+        "Model Number": raw_params["model_number"],
+        "Serial Number": raw_params["serial_number"],
+        "Status": "Open",
+        "Date": date,
+        "Time Slot Chosen": "0",
+        "Time Slots": {"Slot 1": {"Time": "0", "Date": "0"},
+            "Slot 2": {"Time": "0", "Date": "0"},
+            "Slot 3": {"Time": "0", "Date": "0"}},
+        "Progress": "Under review.",
+        "Free Time": free_time,
+        "Details of Call": {
+        "Time": "0",
+        "Date": "0"}
+        }
+    db = firebase.database()
+    firebase_response = db.child(
+        'user_data').child(
+        firebase_uid).child(
+        'Complaints').push(complaint_params)
+
+    fulfillment_response = {
+        "fulfillmentText":
+        "You appointment was successfully registered. The reference number for this complaint is " + firebase_response["name"]}
+    return fulfillment_response
 
 
 
@@ -101,6 +157,7 @@ def create_complaint(data):
     raw_params = context['parameters']
     complaint_params = {
         "Product Type": raw_params["product_type"],
+        "Type": "House Call",
         "Issue Type": raw_params["issue_type"],
         "Description": raw_params["description"],
         "Model Number": raw_params["model_number"],
@@ -111,7 +168,14 @@ def create_complaint(data):
         "Time Slots": {"Slot 1": {"Time": "0", "Date": "0"},
             "Slot 2": {"Time": "0", "Date": "0"},
             "Slot 3": {"Time": "0", "Date": "0"}},
-        "Progress": "Under review."
+        "Progress": "Under review.",
+        "Free Time": {
+        "Date": ["0"],
+        "Time": ["0"],
+        },
+        "Details of Call": {
+        "Time": "0",
+        "Date": "0"}
         }
 
     db = firebase.database()
