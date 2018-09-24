@@ -28,10 +28,28 @@ def healthCheck():
 def firebase_fulfillment():
     req = request.json
     print (req)
-    response = create_complaint(req)
-    fulfillment_response = {
-        "fulfillmentText": "You complaint was successfully registered. The reference number for this complaint is " + response["name"]}
-    return jsonify(fulfillment_response)
+    action = req["queryResult"]["action"]
+    print (action)
+    if action == "save_complaint":
+        response = create_complaint(req)
+    elif action == "initiate_call":
+        response = check_mobile(req);
+    return jsonify(response)
+
+def check_mobile(data):
+    firebase_uid = data['session'].split('/')[-1]
+    db = firebase.database()
+    mobile = db.child("users").child(firebase_uid).child("Mobile Number").get().val()
+    if mobile == "0" or mobile == None:
+        response = {
+        "followupEventInput": "request_mobile"}
+    else:
+        print (mobile)
+        response = {
+        "fulfillmentText": "Your mobile number is " + mobile
+        }
+    return response
+
 
 
 @app.route('/getcomplaint/', methods=['GET'])
@@ -76,7 +94,11 @@ def create_complaint(data):
         'user_data').child(
         firebase_uid).child(
         'Complaints').push(complaint_params)
-    return firebase_response
+
+    fulfillment_response = {
+        "fulfillmentText":
+        "You complaint was successfully registered. The reference number for this complaint is " + firebase_response["name"]}
+    return fulfillment_response
 
 
 @app.route('/choosetimeslot/', methods=["POST"])
