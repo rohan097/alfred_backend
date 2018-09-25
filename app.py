@@ -50,7 +50,7 @@ def save_mobile(data):
     firebase_uid = data['session'].split('/')[-1]
     db = firebase.database()
     mobile = data["queryResult"]["parameters"]["phone_number"]
-    db.child("users").child(firebase_uid).child("Mobile Number").set(str(mobile))
+    db.child("user_data").child(firebase_uid).child("Mobile Number").set(str(mobile))
     response = {
         "fulfillmentText": "I've saved your phone number.",
         "followupEventInput": {
@@ -62,7 +62,6 @@ def save_mobile(data):
 
 
 def create_call_complaint(data):
-    firebase_uid = data['session'].split('/')[-1]
     firebase_uid = data['session'].split('/')[-1]
     contexts = data['queryResult']['outputContexts']
     for i in contexts:
