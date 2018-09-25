@@ -99,7 +99,7 @@ def create_call_complaint(data):
             "Date": "0"}
     }
 
-    complaint_id = str(uuid.uuid4()[:8])
+    complaint_id = str(uuid.uuid4())[:8]
     db = firebase.database()
     db.child(
         'user_data').child(
