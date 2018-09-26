@@ -145,6 +145,8 @@ def firebase_fulfillment():
         response = {
             "fulfillmentText": "Something went wrong. Please try again later."
         }
+    print ("Response to Dialogflow: ")
+    pprint.pprint(response)
     return jsonify(response)
 
 
