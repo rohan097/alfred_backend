@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import pyrebase
 import datetime
 import json
+import pprint
 import uuid
 
 with open('credentials/firebase.json') as f:
@@ -26,7 +27,6 @@ def healthCheck():
 
 
 def check_address(data):
-
     """
     Checks if the address is present in the database. If the address is
     there, it checks if the mobile number is present.
@@ -38,6 +38,7 @@ def check_address(data):
     db = firebase.database()
     pincode = db.child("user_data").child(firebase_uid).child("Address").child("Pincode").get().val()
     if pincode == "0" or pincode is None:
+        print("Address not found.")
         response = {
             "followupEventInput": {
                 "name": "request_address",
@@ -49,19 +50,18 @@ def check_address(data):
 
 
 def save_address(data):
-
     """
     This saves the address entered by the user and then
     checks if the mobile number is there.
     :param data:
     :return:
     """
-
+    print("Saving address.")
     firebase_uid = data['session'].split('/')[-1]
     db = firebase.database()
     contexts = data['queryResult']['outputContexts']
     for i in contexts:
-        if ('address_data' in i['name']):
+        if 'address_data' in i['name']:
             context = i
             break
 
@@ -72,19 +72,14 @@ def save_address(data):
         "Pincode": pincode
     }
     db.child("user_data").child(firebase_uid).child("Address").set(temp)
-    response = {
-        "fulfillmentText": "I've saved your phone number.",
-        "followupEventInput": {
-            "name": "continue_call_details",
-            "languageCode": "en-US"
-        }
-    }
-    check_mobile(data)
+    print("Address saved. Checking if mobile number is present.")
+    response = check_mobile(data)
+    print("Response from Check Mobile function = ")
+    pprint.pprint(response)
     return response
 
 
 def check_mobile(data):
-
     """
     It checks if the mobile number is present in the database. If it is, it
     continues the conversation, otherwise it asks the user.
@@ -96,13 +91,14 @@ def check_mobile(data):
     db = firebase.database()
     mobile = db.child("user_data").child(firebase_uid).child("Mobile Number").get().val()
     if mobile == "0" or mobile is None:
+        print("Mobile number not found.")
         response = {
             "followupEventInput": {
                 "name": "request_mobile",
                 "languageCode": "en-US"
             }}
     else:
-        print(mobile)
+        print("Mobile number found: " + mobile)
         response = {
             "followupEventInput": {
                 "name": "continue_call_details",
@@ -130,15 +126,15 @@ def save_mobile(data):
 @app.route('/dialogflow', methods=['POST'])
 def firebase_fulfillment():
     req = request.json
-    print(req)
+    pprint.pprint(req)
     action = req["queryResult"]["action"]
-    print(action)
+    print("Dialogflow action = " + action)
     if action == "save_complaint":
         response = create_complaint(req)
     elif action == "check_address":
         response = check_address(req)
     elif action == "save_address":
-        save_address(req)
+        response = save_address(req)
     elif action == "check_mobile":
         response = check_mobile(req)
     elif action == "save_mobile":
@@ -152,14 +148,11 @@ def firebase_fulfillment():
     return jsonify(response)
 
 
-
-
-
 def create_call_complaint(data):
     firebase_uid = data['session'].split('/')[-1]
     contexts = data['queryResult']['outputContexts']
     for i in contexts:
-        if ('call_data' in i['name']):
+        if 'call_data' in i['name']:
             context = i
             break
 
@@ -167,8 +160,6 @@ def create_call_complaint(data):
     date = date.strftime("%d-%m-%Y")
 
     raw_params = context['parameters']
-
-    free_time = dict({})
 
     free_time = {
         "Time": raw_params["time"],
@@ -263,17 +254,16 @@ def create_complaint(data):
 
 
 @app.route('/choosetimeslot/', methods=["POST"])
-def chooseTimeSlot():
+def choose_time_slot():
     req = request.json
     firebase_uid = req["firebase_uid"]
     complaint_id = req["complaint_id"]
-    db = firebase.database();
+    db = firebase.database()
     db.child("user_data").child(
         firebase_uid).child(
         "Complaints").child(
-        complaint_id).update({
-        "Time Slot Chosen": req["time_slot"]
-    })
+        complaint_id).update({"Time Slot Chosen": req["time_slot"]
+                              })
     return jsonify({"Status": "200", "Message": "successfully chosen time"})
 
 
