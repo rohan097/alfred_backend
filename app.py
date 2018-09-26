@@ -116,7 +116,7 @@ def save_mobile(data):
     response = {
         "fulfillmentText": "Great! It looks like I have everything needed to contact you.",
         "followupEventInput": {
-            "name": "continue_call_details",
+            "name": "continue_house",
             "languageCode": "en-US"
         }
     }
