@@ -59,8 +59,14 @@ def save_address(data):
 
     firebase_uid = data['session'].split('/')[-1]
     db = firebase.database()
-    pincode = str(data["queryResult"]["outputContexts"]["parameters"]["pincode"])
-    address = data["queryResult"]["outputContexts"]["parameters"]["address"]
+    contexts = data['queryResult']['outputContexts']
+    for i in contexts:
+        if ('address_data' in i['name']):
+            context = i
+            break
+
+    pincode = str(context["parameters"]["pincode"])
+    address = context["parameters"]["address"]
     temp = {
         "Main": address,
         "Pincode": pincode
@@ -212,7 +218,7 @@ def create_complaint(data):
     firebase_uid = data['session'].split('/')[-1]
     contexts = data['queryResult']['outputContexts']
     for i in contexts:
-        if 'globals' in i['name']:
+        if 'visit_data' in i['name']:
             context = i
             break
 
