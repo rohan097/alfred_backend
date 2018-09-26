@@ -59,8 +59,8 @@ def save_address(data):
 
     firebase_uid = data['session'].split('/')[-1]
     db = firebase.database()
-    pincode = data["queryResult"]["parameters"]["pincode"]
-    address = data["queryResult"]["parameters"]["address"]
+    pincode = str(data["queryResult"]["outputContexts"]["parameters"]["pincode"])
+    address = data["queryResult"]["outputContexts"]["parameters"]["address"]
     temp = {
         "Main": address,
         "Pincode": pincode
