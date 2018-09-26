@@ -129,7 +129,7 @@ def firebase_fulfillment():
     pprint.pprint(req)
     action = req["queryResult"]["action"]
     print("Dialogflow action = " + action)
-    if action == "save_complaint":
+    if action == "save_house_ticket":
         response = create_complaint(req)
     elif action == "check_address":
         response = check_address(req)
@@ -139,7 +139,7 @@ def firebase_fulfillment():
         response = check_mobile(req)
     elif action == "save_mobile":
         response = save_mobile(req)
-    elif action == "save_call":
+    elif action == "save_call_ticket":
         response = create_call_complaint(req)
     else:
         response = {
@@ -201,6 +201,11 @@ def create_call_complaint(data):
 
 @app.route('/getcomplaint/', methods=['GET'])
 def return_complaints():
+
+    """
+    This function returns all the complaints for a particular user.
+    :return:
+    """
     user_id = request.args.get('firebase_uid')
     db = firebase.database()
     data = db.child("user_data").child(user_id).child("Complaints").get().val()
