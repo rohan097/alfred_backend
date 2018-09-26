@@ -25,6 +25,102 @@ def healthCheck():
     return jsonify({"Status": "OK"})
 
 
+def check_address(data):
+
+    """
+    Checks if the address is present in the database. If the address is
+    there, it checks if the mobile number is present.
+    :param data:
+    :return:
+    """
+
+    firebase_uid = data['session'].split('/')[-1]
+    db = firebase.database()
+    pincode = db.child("user_data").child(firebase_uid).child("Address").child("Pincode").get().val()
+    if pincode == "0" or pincode is None:
+        response = {
+            "followupEventInput": {
+                "name": "request_address",
+                "languageCode": "en-US"
+            }}
+    else:
+        response = check_mobile(data)
+    return response
+
+
+def save_address(data):
+
+    """
+    This saves the address entered by the user and then
+    checks if the mobile number is there.
+    :param data:
+    :return:
+    """
+
+    firebase_uid = data['session'].split('/')[-1]
+    db = firebase.database()
+    pincode = data["queryResult"]["parameters"]["pincode"]
+    address = data["queryResult"]["parameters"]["address"]
+    temp = {
+        "Main": address,
+        "Pincode": pincode
+    }
+    db.child("user_data").child(firebase_uid).child("Address").set(temp)
+    response = {
+        "fulfillmentText": "I've saved your phone number.",
+        "followupEventInput": {
+            "name": "continue_call_details",
+            "languageCode": "en-US"
+        }
+    }
+    check_mobile(data)
+    return response
+
+
+def check_mobile(data):
+
+    """
+    It checks if the mobile number is present in the database. If it is, it
+    continues the conversation, otherwise it asks the user.
+    :param data:
+    :return:
+    """
+
+    firebase_uid = data['session'].split('/')[-1]
+    db = firebase.database()
+    mobile = db.child("user_data").child(firebase_uid).child("Mobile Number").get().val()
+    if mobile == "0" or mobile is None:
+        response = {
+            "followupEventInput": {
+                "name": "request_mobile",
+                "languageCode": "en-US"
+            }}
+    else:
+        print(mobile)
+        response = {
+            "followupEventInput": {
+                "name": "continue_call_details",
+                "languageCode": "en-US"
+            }
+        }
+    return response
+
+
+def save_mobile(data):
+    firebase_uid = data['session'].split('/')[-1]
+    db = firebase.database()
+    mobile = data["queryResult"]["parameters"]["phone_number"]
+    db.child("user_data").child(firebase_uid).child("Mobile Number").set(str(mobile))
+    response = {
+        "fulfillmentText": "Great! It looks like I have everything needed to contact you.",
+        "followupEventInput": {
+            "name": "continue_call_details",
+            "languageCode": "en-US"
+        }
+    }
+    return response
+
+
 @app.route('/dialogflow', methods=['POST'])
 def firebase_fulfillment():
     req = request.json
@@ -33,8 +129,12 @@ def firebase_fulfillment():
     print(action)
     if action == "save_complaint":
         response = create_complaint(req)
-    elif action == "initiate_call":
-        response = check_mobile(req);
+    elif action == "check_address":
+        response = check_address(req)
+    elif action == "save_address":
+        save_address(req)
+    elif action == "check_mobile":
+        response = check_mobile(req)
     elif action == "save_mobile":
         response = save_mobile(req)
     elif action == "save_call":
@@ -46,19 +146,7 @@ def firebase_fulfillment():
     return jsonify(response)
 
 
-def save_mobile(data):
-    firebase_uid = data['session'].split('/')[-1]
-    db = firebase.database()
-    mobile = data["queryResult"]["parameters"]["phone_number"]
-    db.child("user_data").child(firebase_uid).child("Mobile Number").set(str(mobile))
-    response = {
-        "fulfillmentText": "I've saved your phone number.",
-        "followupEventInput": {
-            "name": "continue_call_details",
-            "languageCode": "en-US"
-        }
-    }
-    return response
+
 
 
 def create_call_complaint(data):
@@ -110,27 +198,6 @@ def create_call_complaint(data):
         "fulfillmentText":
             "You appointment was successfully registered. The reference number for this complaint is " + complaint_id}
     return fulfillment_response
-
-
-def check_mobile(data):
-    firebase_uid = data['session'].split('/')[-1]
-    db = firebase.database()
-    mobile = db.child("user_data").child(firebase_uid).child("Mobile Number").get().val()
-    if mobile == "0" or mobile is None:
-        response = {
-            "followupEventInput": {
-                "name": "request_mobile",
-                "languageCode": "en-US"
-            }}
-    else:
-        print(mobile)
-        response = {
-            "followupEventInput": {
-                "name": "continue_call_details",
-                "languageCode": "en-US"
-            }
-        }
-    return response
 
 
 @app.route('/getcomplaint/', methods=['GET'])
