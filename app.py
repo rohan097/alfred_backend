@@ -101,7 +101,7 @@ def check_mobile(data):
         print("Mobile number found: " + mobile)
         response = {
             "followupEventInput": {
-                "name": "continue_call_details",
+                "name": "continue_house",
                 "languageCode": "en-US"
             }
         }
