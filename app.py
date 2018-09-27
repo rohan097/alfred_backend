@@ -22,7 +22,7 @@ app = Flask(__name__)
 
 
 @app.route('/')
-def healthCheck():
+def health_check():
     return jsonify({"Status": "OK"})
 
 
@@ -80,6 +80,7 @@ def save_address(data):
 
 
 def check_mobile(data):
+
     """
     It checks if the mobile number is present in the database. If it is, it
     continues the conversation, otherwise it asks the user.
@@ -89,7 +90,14 @@ def check_mobile(data):
 
     firebase_uid = data['session'].split('/')[-1]
     db = firebase.database()
+    follow_up_event = "continue_house"
     mobile = db.child("user_data").child(firebase_uid).child("Mobile Number").get().val()
+    try:
+        origin = data["queryResult"]["fulfillmentMessages"][1]["payload"]
+        if origin == "confirmedCall":
+            follow_up_event = "continue_call"
+    except:
+        pass
     if mobile == "0" or mobile is None:
         print("Mobile number not found.")
         response = {
@@ -101,7 +109,7 @@ def check_mobile(data):
         print("Mobile number found: " + mobile)
         response = {
             "followupEventInput": {
-                "name": "continue_house",
+                "name": follow_up_event,
                 "languageCode": "en-US"
             }
         }
@@ -109,14 +117,24 @@ def check_mobile(data):
 
 
 def save_mobile(data):
+
+    """
+    This function saves the mobile number provided by the user to the database.
+    :param data:
+    :return:
+    """
     firebase_uid = data['session'].split('/')[-1]
     db = firebase.database()
     mobile = data["queryResult"]["parameters"]["phone_number"]
+    follow_up_event: str = "continue_house"
+    for i in data["queryResult"]["outputContexts"]:
+        if "confirm-call-followup" in i["name"]:
+            follow_up_event = "continue_call"
     db.child("user_data").child(firebase_uid).child("Mobile Number").set(str(mobile))
     response = {
         "fulfillmentText": "Great! It looks like I have everything needed to contact you.",
         "followupEventInput": {
-            "name": "continue_house",
+            "name": follow_up_event,
             "languageCode": "en-US"
         }
     }
@@ -125,6 +143,11 @@ def save_mobile(data):
 
 @app.route('/dialogflow', methods=['POST'])
 def firebase_fulfillment():
+
+    """
+    This function all the fulfillment requests from Dialogflow.
+    :return:
+    """
     req = request.json
     pprint.pprint(req)
     action = req["queryResult"]["action"]
@@ -145,7 +168,7 @@ def firebase_fulfillment():
         response = {
             "fulfillmentText": "Something went wrong. Please try again later."
         }
-    print ("Response to Dialogflow: ")
+    print("Response to Dialogflow: ")
     pprint.pprint(response)
     return jsonify(response)
 
