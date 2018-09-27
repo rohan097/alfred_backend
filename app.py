@@ -193,8 +193,8 @@ def create_call_ticket(data):
     raw_params = context['parameters']
 
     free_time = {
-        "Time": raw_params["time"],
-        "Date": raw_params["date"]
+        "Time": raw_params["free_time"],
+        "Date": raw_params["free_date"]
     }
     ticket_params = {
         "Product Type": raw_params["product_type"],
