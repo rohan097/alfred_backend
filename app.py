@@ -93,7 +93,7 @@ def check_mobile(data):
     follow_up_event = "continue_house"
     mobile = db.child("user_data").child(firebase_uid).child("Mobile Number").get().val()
     try:
-        origin = data["queryResult"]["fulfillmentMessages"][1]["payload"]
+        origin = data["queryResult"]["fulfillmentMessages"][1]["payload"]["origin"]
         if origin == "confirmedCall":
             follow_up_event = "continue_call"
     except:
