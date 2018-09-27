@@ -80,7 +80,6 @@ def save_address(data):
 
 
 def check_mobile(data):
-
     """
     It checks if the mobile number is present in the database. If it is, it
     continues the conversation, otherwise it asks the user.
@@ -117,7 +116,6 @@ def check_mobile(data):
 
 
 def save_mobile(data):
-
     """
     This function saves the mobile number provided by the user to the database.
     :param data:
@@ -143,7 +141,6 @@ def save_mobile(data):
 
 @app.route('/dialogflow', methods=['POST'])
 def firebase_fulfillment():
-
     """
     This function all the fulfillment requests from Dialogflow.
     :return:
@@ -174,7 +171,6 @@ def firebase_fulfillment():
 
 
 def create_call_ticket(data):
-
     """
     This function creates a record of the complaint issued by the user.
     :param data:
@@ -225,13 +221,14 @@ def create_call_ticket(data):
 
     fulfillment_response = {
         "fulfillmentText":
-            "You appointment was successfully registered. The reference number for this complaint is " + ticket_id}
+            "You appointment was successfully registered. The reference number for this ticket is " + ticket_id +
+            ". The timings of your call would be confirmed soon. You check the status by asking me or by going to the "
+            "\"Tickets\" section of the app."}
     return fulfillment_response
 
 
 @app.route('/getcomplaint/', methods=['GET'])
 def return_complaints():
-
     """
     This function returns all the complaints for a particular user.
     :return:
@@ -243,7 +240,6 @@ def return_complaints():
 
 
 def create_ticket(data):
-
     """
     This creates a record of a ticket for a house call.
     :param data:
@@ -291,7 +287,9 @@ def create_ticket(data):
 
     fulfillment_response = {
         "fulfillmentText":
-            "You complaint was successfully registered. The reference number for this complaint is " + ticket_id}
+            "You ticket was successfully registered. The reference number is " + ticket_id +
+            ". Based on the availability of our agents, we will give you three time slots to choose from. You can "
+            "either go to the \"Tickets\" section of the app and update your preference or do so by talking to me."}
     return fulfillment_response
 
 
@@ -305,7 +303,7 @@ def choose_time_slot():
         firebase_uid).child(
         "Complaints").child(
         ticket_id).update({"Time Slot Chosen": req["time_slot"]
-                              })
+                           })
     return jsonify({"Status": "200", "Message": "successfully chosen time"})
 
 
