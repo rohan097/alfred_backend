@@ -193,8 +193,8 @@ def create_call_ticket(data):
     raw_params = context['parameters']
 
     free_time = {
-        "Time": raw_params["free_time"],
-        "Date": raw_params["free_date"]
+        "Time": raw_params["free_time"]["time"],
+        "Date": raw_params["free_date"]["date"]
     }
     ticket_params = {
         "Product Type": raw_params["product_type"],
@@ -216,6 +216,7 @@ def create_call_ticket(data):
     }
 
     ticket_id = str(uuid.uuid4())[:8]
+    pprint.pprint(ticket_params)
     db = firebase.database()
     db.child(
         'user_data').child(
@@ -281,7 +282,6 @@ def create_ticket(data):
             "Time": "0",
             "Date": "0"}
     }
-
     ticket_id = str(uuid.uuid4())[:8]
     db = firebase.database()
     db.child(
