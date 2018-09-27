@@ -126,7 +126,7 @@ def save_mobile(data):
     firebase_uid = data['session'].split('/')[-1]
     db = firebase.database()
     mobile = data["queryResult"]["parameters"]["phone_number"]
-    follow_up_event: str = "continue_house"
+    follow_up_event = "continue_house"
     for i in data["queryResult"]["outputContexts"]:
         if "confirm-call-followup" in i["name"]:
             follow_up_event = "continue_call"
