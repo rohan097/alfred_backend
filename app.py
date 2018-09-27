@@ -65,7 +65,7 @@ def save_address(data):
             context = i
             break
 
-    pincode = str(context["parameters"]["pincode"])
+    pincode = str(int(context["parameters"]["pincode"]))
     address = context["parameters"]["address"]
     temp = {
         "Main": address,
@@ -153,7 +153,7 @@ def firebase_fulfillment():
     action = req["queryResult"]["action"]
     print("Dialogflow action = " + action)
     if action == "save_house_ticket":
-        response = create_complaint(req)
+        response = create_ticket(req)
     elif action == "check_address":
         response = check_address(req)
     elif action == "save_address":
@@ -163,7 +163,7 @@ def firebase_fulfillment():
     elif action == "save_mobile":
         response = save_mobile(req)
     elif action == "save_call_ticket":
-        response = create_call_complaint(req)
+        response = create_call_ticket(req)
     else:
         response = {
             "fulfillmentText": "Something went wrong. Please try again later."
@@ -173,7 +173,13 @@ def firebase_fulfillment():
     return jsonify(response)
 
 
-def create_call_complaint(data):
+def create_call_ticket(data):
+
+    """
+    This function creates a record of the complaint issued by the user.
+    :param data:
+    :return:
+    """
     firebase_uid = data['session'].split('/')[-1]
     contexts = data['queryResult']['outputContexts']
     for i in contexts:
@@ -190,7 +196,7 @@ def create_call_complaint(data):
         "Time": raw_params["time"],
         "Date": raw_params["date"]
     }
-    complaint_params = {
+    ticket_params = {
         "Product Type": raw_params["product_type"],
         "Type": "Phone Call",
         "Issue Type": raw_params["issue_type"],
@@ -209,16 +215,16 @@ def create_call_complaint(data):
             "Date": "0"}
     }
 
-    complaint_id = str(uuid.uuid4())[:8]
+    ticket_id = str(uuid.uuid4())[:8]
     db = firebase.database()
     db.child(
         'user_data').child(
         firebase_uid).child(
-        'Complaints').child(complaint_id).set(complaint_params)
+        'Complaints').child(ticket_id).set(ticket_params)
 
     fulfillment_response = {
         "fulfillmentText":
-            "You appointment was successfully registered. The reference number for this complaint is " + complaint_id}
+            "You appointment was successfully registered. The reference number for this complaint is " + ticket_id}
     return fulfillment_response
 
 
@@ -235,7 +241,13 @@ def return_complaints():
     return jsonify({"Status": "OK", "Data": data, "Response": 200})
 
 
-def create_complaint(data):
+def create_ticket(data):
+
+    """
+    This creates a record of a ticket for a house call.
+    :param data:
+    :return:
+    """
     firebase_uid = data['session'].split('/')[-1]
     contexts = data['queryResult']['outputContexts']
     for i in contexts:
@@ -247,7 +259,7 @@ def create_complaint(data):
     date = date.strftime("%d-%m-%Y")
 
     raw_params = context['parameters']
-    complaint_params = {
+    ticket_params = {
         "Product Type": raw_params["product_type"],
         "Type": "House Call",
         "Issue Type": raw_params["issue_type"],
@@ -270,16 +282,16 @@ def create_complaint(data):
             "Date": "0"}
     }
 
-    complaint_uid = str(uuid.uuid4())[:8]
+    ticket_id = str(uuid.uuid4())[:8]
     db = firebase.database()
     db.child(
         'user_data').child(
         firebase_uid).child(
-        'Complaints').child(complaint_uid).set(complaint_params)
+        'Complaints').child(ticket_id).set(ticket_params)
 
     fulfillment_response = {
         "fulfillmentText":
-            "You complaint was successfully registered. The reference number for this complaint is " + complaint_uid}
+            "You complaint was successfully registered. The reference number for this complaint is " + ticket_id}
     return fulfillment_response
 
 
@@ -287,12 +299,12 @@ def create_complaint(data):
 def choose_time_slot():
     req = request.json
     firebase_uid = req["firebase_uid"]
-    complaint_id = req["complaint_id"]
+    ticket_id = req["complaint_id"]
     db = firebase.database()
     db.child("user_data").child(
         firebase_uid).child(
         "Complaints").child(
-        complaint_id).update({"Time Slot Chosen": req["time_slot"]
+        ticket_id).update({"Time Slot Chosen": req["time_slot"]
                               })
     return jsonify({"Status": "200", "Message": "successfully chosen time"})
 
