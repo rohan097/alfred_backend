@@ -190,6 +190,51 @@ def validate_model_serial(data):
     return response
 
 
+def view_tickets(data):
+
+    firebase_uid = data["session"].split('/')[-1]
+    db = firebase.database()
+    user_data = db.child("user_data").child(firebase_uid).child("Complaints").get().val()
+    if len(user_data) == 0:
+        message = "You don't have any tickets."
+    else:
+        message = "The details of your tickets are: \n"
+        for i in user_data:
+            message += "ID: " + str(i) + "\n"+\
+                       "Progress: " + user_data[i]["Progress"] + "\n" +\
+                       "Product: " + user_data[i]["Product Type"] + "\n" +\
+                       "Issue Type: " + user_data[i]["Issue Type"] + "\n"
+            if user_data[i]["Type"] == "Phone Call":
+                if user_data[i]["Details of Call"]["Date"] == "0":
+                    message += "Details of Call: To be confirmed.\n\n"
+                else:
+                    message += "Details of Call: \n" +\
+                               "\tTime: " + user_data[i]["Details of Call"]["Time"] +\
+                               "\tDate: " + user_data[i]["Details of Call"]["Date"] + "\n\n"
+            else:
+                if user_data[i]["Time Slots"]["Slot 1"]["Date"] == "0":
+                    message += "Available Time Slots: To be confirmed.\n\n"
+                else:
+                    message += "Available Time Slots: \n" +\
+                               "\tSlot 1 - " +\
+                               "\n\t\tDate: " + user_data[i]["Time Slots"]["Slot 1"]["Date"] +\
+                               "\n\t\tTime: " + user_data[i]["Time Slots"]["Slot 1"]["Time"] + \
+                               "\n\tSlot 2 - " + \
+                               "\n\t\tDate: " + user_data[i]["Time Slots"]["Slot 2"]["Date"] + \
+                               "\n\t\tTime: " + user_data[i]["Time Slots"]["Slot 2"]["Time"] + \
+                               "\n\tSlot 3 - " + \
+                               "\n\t\tDate: " + user_data[i]["Time Slots"]["Slot 3"]["Date"] + \
+                               "\n\t\tTime: " + user_data[i]["Time Slots"]["Slot 3"]["Time"] + "\n"
+                    if user_data[i]["Time Slot Chosen"] == "0":
+                        message += "Time Slot Chosen: None"
+                    else:
+                        message += "Time Slot Chosen: Slot " + user_data[i]["Time Slot Chosen"] + "\n\n"
+    response = {
+        "fulfillmentText": message
+    }
+    return response 
+
+
 @app.route('/dialogflow', methods=['POST'])
 def firebase_fulfillment():
     """
@@ -214,6 +259,8 @@ def firebase_fulfillment():
         response = validate_model_serial(req)
     elif action == "save_call_ticket":
         response = create_call_ticket(req)
+    elif action == "view_tickets":
+        response = view_tickets(req)
     else:
         response = {
             "fulfillmentText": "Something went wrong. Please try again later."
