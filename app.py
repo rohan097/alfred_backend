@@ -146,7 +146,6 @@ def validate_model_serial(data):
     :return:
     """
     print("Validating model and serial number.")
-    firebase_uid = data['session'].split('/')[-1]
     db = firebase.database()
     serial_number = data["queryResult"]["parameters"]["serial_number"]
     model_number = data["queryResult"]["parameters"]["model_number"]
@@ -191,7 +190,6 @@ def validate_model_serial(data):
 
 
 def view_tickets(data):
-
     firebase_uid = data["session"].split('/')[-1]
     db = firebase.database()
     user_data = db.child("user_data").child(firebase_uid).child("Complaints").get().val()
@@ -200,24 +198,24 @@ def view_tickets(data):
     else:
         message = "The details of your tickets are: \n"
         for i in user_data:
-            message += "ID: " + str(i) + "\n"+\
-                       "Progress: " + user_data[i]["Progress"] + "\n" +\
-                       "Product: " + user_data[i]["Product Type"] + "\n" +\
+            message += "ID: " + str(i) + "\n" + \
+                       "Progress: " + user_data[i]["Progress"] + "\n" + \
+                       "Product: " + user_data[i]["Product Type"] + "\n" + \
                        "Issue Type: " + user_data[i]["Issue Type"] + "\n"
             if user_data[i]["Type"] == "Phone Call":
                 if user_data[i]["Details of Call"]["Date"] == "0":
                     message += "Details of Call: To be confirmed.\n\n"
                 else:
-                    message += "Details of Call: \n" +\
-                               "\t\tTime: " + user_data[i]["Details of Call"]["Time"] +\
+                    message += "Details of Call: \n" + \
+                               "\t\tTime: " + user_data[i]["Details of Call"]["Time"] + \
                                "\t\tDate: " + user_data[i]["Details of Call"]["Date"] + "\n\n"
             else:
                 if user_data[i]["Time Slots"]["Slot 1"]["Date"] == "0":
                     message += "Available Time Slots: To be confirmed.\n\n"
                 else:
-                    message += "Available Time Slots: \n" +\
-                               "\t\tSlot 1 - " +\
-                               "\n\t\t\t\tDate: " + user_data[i]["Time Slots"]["Slot 1"]["Date"] +\
+                    message += "Available Time Slots: \n" + \
+                               "\t\tSlot 1 - " + \
+                               "\n\t\t\t\tDate: " + user_data[i]["Time Slots"]["Slot 1"]["Date"] + \
                                "\n\t\t\t\tTime: " + user_data[i]["Time Slots"]["Slot 1"]["Time"] + \
                                "\n\t\tSlot 2 - " + \
                                "\n\t\t\t\tDate: " + user_data[i]["Time Slots"]["Slot 2"]["Date"] + \
@@ -248,6 +246,49 @@ def delete_ticket(data):
     return response
 
 
+def schedule_slot(data):
+    firebase_uid = data["session"].split("/")[-1]
+    db = firebase.database()
+    ticket_id = data["queryResult"]["parameters"]["ticket_id"]
+    complaint = db.child("user_data").child(firebase_uid).child("Complaints").child(ticket_id).get().val()
+    print (complaint)
+    if complaint["Time Slots"]["Slot 1"]["Date"] == "0":
+        message = "No time slots have been allotted yet. You can either check back with me in some time or go to the " \
+                  "\"Tickets\" section of the app to stay updated. "
+    else:
+        message = "Available Time Slots: \n" + \
+                   "\t\tSlot 1 - " + \
+                   "\n\t\t\t\tDate: " + complaint["Time Slots"]["Slot 1"]["Date"] + \
+                   "\n\t\t\t\tTime: " + complaint["Time Slots"]["Slot 1"]["Time"] + \
+                   "\n\t\tSlot 2 - " + \
+                   "\n\t\t\t\tDate: " + complaint["Time Slots"]["Slot 2"]["Date"] + \
+                   "\n\t\t\t\tTime: " + complaint["Time Slots"]["Slot 2"]["Time"] + \
+                   "\n\t\tSlot 3 - " + \
+                   "\n\t\t\t\tDate: " + complaint["Time Slots"]["Slot 3"]["Date"] + \
+                   "\n\t\t\t\tTime: " + complaint["Time Slots"]["Slot 3"]["Time"] + "\n"
+        message += "Which time slot do you choose? Please enter \"1\" for Slot-1 and so on."
+    response = {
+        "fulfillmentText": message
+    }
+    return response
+
+
+def choose_slot(data):
+    firebase_uid = data["session"].split("/")[-1]
+    db = firebase.database()
+    slot = data["queryResult"]["parameters"]["slot"]
+    for i in data["queryResult"]["outputContexts"]:
+        if "ticket-id" in i["name"]:
+            ticket_id = i["parameters"]["ticket_id"]
+            db.child("user_data").child(firebase_uid).child("Complaints").child(ticket_id).child("Time Slot Chosen").set(str(slot))
+            break
+    response = {
+        "fulfillmentText": "I have updated your preference."
+    }
+    return response
+
+
+
 @app.route('/dialogflow', methods=['POST'])
 def firebase_fulfillment():
     """
@@ -276,6 +317,10 @@ def firebase_fulfillment():
         response = view_tickets(req)
     elif action == "delete_ticket":
         response = delete_ticket(req)
+    elif action == "schedule_slot":
+        response = schedule_slot(req)
+    elif action == "choose_slot":
+        response = choose_slot(req)
     else:
         response = {
             "fulfillmentText": "Something went wrong. Please try again later."
