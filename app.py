@@ -145,6 +145,7 @@ def validate_model_serial(data):
     :param data:
     :return:
     """
+    print("Validating model and serial number.")
     firebase_uid = data['session'].split('/')[-1]
     db = firebase.database()
     serial_number = data["queryResult"]["parameters"]["serial_number"]
@@ -152,28 +153,10 @@ def validate_model_serial(data):
     for i in data["queryResult"]["outputContexts"]:
         if "visit_data" in i["name"] or "call_data" in i["name"]:
             product = i["parameters"]["product_type"]
-            issue_type = i["parameters"]["issue_type"]
             if "call_data" in i["name"]:
                 follow_up_event = "confirm-call"
-                free_date = i["parameters"]["free_date"]["date"]
-                free_time = i["parameters"]["free_time"]["time"]
-                confirmation_message = "Can you confirm the following:\n" + \
-                                       "Support Type: Phone Call\n" + \
-                                       "Product Type: " + product + "\n" + \
-                                       "Issue Type: " + issue_type + "\n" + \
-                                       "Model Number: " + model_number + "\n" + \
-                                       "Serial Number: " + serial_number + "\n" + \
-                                       "Free Time: " + free_time + "\n" + \
-                                       "Free Date: " + free_date + "\n"
             else:
                 follow_up_event = "confirm-house"
-                confirmation_message = "Can you confirm the following:\n" + \
-                                       "Support Type: House Visit\n" + \
-                                       "Product Type: " + product + "\n" + \
-                                       "Issue Type: " + issue_type + "\n" + \
-                                       "Model Number: " + model_number + "\n" + \
-                                       "Serial Number: " + serial_number + "\n"
-            pass
 
     product_data = db.child("Products").get().val()
     if serial_number in product_data.keys():
@@ -182,7 +165,7 @@ def validate_model_serial(data):
             if model_number == product_data[serial_number]["Model Number"]:
                 # Model number exists and matches with the serial number
                 # Model number and serial number match with product type
-                message = confirmation_message
+                message = "Confirm ticket?"
             else:
                 # Model number and serial number do not match with the product type.
                 message = "The model number you have entered is incorrect."
