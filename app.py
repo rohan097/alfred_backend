@@ -209,22 +209,22 @@ def view_tickets(data):
                     message += "Details of Call: To be confirmed.\n\n"
                 else:
                     message += "Details of Call: \n" +\
-                               "\tTime: " + user_data[i]["Details of Call"]["Time"] +\
-                               "\tDate: " + user_data[i]["Details of Call"]["Date"] + "\n\n"
+                               "\t\tTime: " + user_data[i]["Details of Call"]["Time"] +\
+                               "\t\tDate: " + user_data[i]["Details of Call"]["Date"] + "\n\n"
             else:
                 if user_data[i]["Time Slots"]["Slot 1"]["Date"] == "0":
                     message += "Available Time Slots: To be confirmed.\n\n"
                 else:
                     message += "Available Time Slots: \n" +\
-                               "\tSlot 1 - " +\
-                               "\n\t\tDate: " + user_data[i]["Time Slots"]["Slot 1"]["Date"] +\
-                               "\n\t\tTime: " + user_data[i]["Time Slots"]["Slot 1"]["Time"] + \
-                               "\n\tSlot 2 - " + \
-                               "\n\t\tDate: " + user_data[i]["Time Slots"]["Slot 2"]["Date"] + \
-                               "\n\t\tTime: " + user_data[i]["Time Slots"]["Slot 2"]["Time"] + \
-                               "\n\tSlot 3 - " + \
-                               "\n\t\tDate: " + user_data[i]["Time Slots"]["Slot 3"]["Date"] + \
-                               "\n\t\tTime: " + user_data[i]["Time Slots"]["Slot 3"]["Time"] + "\n"
+                               "\t\tSlot 1 - " +\
+                               "\n\t\t\t\tDate: " + user_data[i]["Time Slots"]["Slot 1"]["Date"] +\
+                               "\n\t\t\t\tTime: " + user_data[i]["Time Slots"]["Slot 1"]["Time"] + \
+                               "\n\t\tSlot 2 - " + \
+                               "\n\t\t\t\tDate: " + user_data[i]["Time Slots"]["Slot 2"]["Date"] + \
+                               "\n\t\t\t\tTime: " + user_data[i]["Time Slots"]["Slot 2"]["Time"] + \
+                               "\n\t\tSlot 3 - " + \
+                               "\n\t\t\t\tDate: " + user_data[i]["Time Slots"]["Slot 3"]["Date"] + \
+                               "\n\t\t\t\tTime: " + user_data[i]["Time Slots"]["Slot 3"]["Time"] + "\n"
                     if user_data[i]["Time Slot Chosen"] == "0":
                         message += "Time Slot Chosen: None"
                     else:
@@ -232,7 +232,20 @@ def view_tickets(data):
     response = {
         "fulfillmentText": message
     }
-    return response 
+    return response
+
+
+def delete_ticket(data):
+    firebase_uid = data["session"].split('/')[-1]
+    for i in data["queryResult"]["outputContexts"]:
+        if "ticket_params" in i["name"]:
+            ticket_id = i["parameters"]["ticket_id"]
+            db = firebase.database()
+            db.child("user_data").child(firebase_uid).child("Complaints").child(ticket_id).remove()
+    response = {
+        "fulfillmentText": "Ticket removed."
+    }
+    return response
 
 
 @app.route('/dialogflow', methods=['POST'])
@@ -261,6 +274,8 @@ def firebase_fulfillment():
         response = create_call_ticket(req)
     elif action == "view_tickets":
         response = view_tickets(req)
+    elif action == "delete_ticket":
+        response = delete_ticket(req)
     else:
         response = {
             "fulfillmentText": "Something went wrong. Please try again later."
