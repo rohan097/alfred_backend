@@ -139,6 +139,75 @@ def save_mobile(data):
     return response
 
 
+def validate_model_serial(data):
+    """
+    This function validates the serial number, model number and product type.
+    :param data:
+    :return:
+    """
+    firebase_uid = data['session'].split('/')[-1]
+    db = firebase.database()
+    serial_number = data["queryResult"]["parameters"]["serial_number"]
+    model_number = data["queryResult"]["parameters"]["model_number"]
+    for i in data["queryResult"]["outputContexts"]:
+        if "visit_data" in i["name"] or "call_data" in i["name"]:
+            product = i["parameters"]["product_type"]
+            issue_type = i["parameters"]["issue_type"]
+            if "call_data" in i["name"]:
+                free_date = i["parameters"]["free_date"]["date"]
+                free_time = i["parameters"]["free_time"]["time"]
+                confirmation_message = "Can you confirm the following:\n" + \
+                                       "Support Type: Phone Call\n" + \
+                                       "Product Type: " + product + "\n" + \
+                                       "Issue Type: " + issue_type + "\n" + \
+                                       "Model Number: " + model_number + "\n" + \
+                                       "Serial Number: " + serial_number + "\n" + \
+                                       "Free Time: " + free_time + "\n" + \
+                                       "Free Date: " + free_date + "\n"
+            else:
+                confirmation_message = "Can you confirm the following:\n" + \
+                                       "Support Type: House Visit\n" + \
+                                       "Product Type: " + product + "\n" + \
+                                       "Issue Type: " + issue_type + "\n" + \
+                                       "Model Number: " + model_number + "\n" + \
+                                       "Serial Number: " + serial_number + "\n"
+            pass
+
+    if "house" in data["queryResult"]["action"]:
+        follow_up_event = "confirm-house"
+    else:
+        follow_up_event = "confirm-call"
+
+    product_data = db.child("Products").get().val()
+    if serial_number in product_data.keys():
+        # Serial number exists.
+        if product == product_data[serial_number]["Product Type"]:
+            if model_number == product_data[serial_number]["Model Number"]:
+                # Model number exists and matches with the serial number
+                # Model number and serial number match with product type
+                message = confirmation_message
+            else:
+                # Model number and serial number do not match with the product type.
+                message = "The model number you have entered is incorrect."
+                follow_up_event = "request_model_serial"
+        else:
+            # Model number is not matching with serial number
+            message = "The serial number you have entered doesn't match with the product type."
+            follow_up_event = "request_model_serial"
+    else:
+        message = "The serial number you have entered is incorrect."
+        follow_up_event = "request_model_serial"
+
+    response = {
+        "fulfillmentText": message,
+        "followupEventInput": {
+            "name": follow_up_event,
+            "languageCode": "en-US"
+        }
+    }
+    return response
+
+
 @app.route('/dialogflow', methods=['POST'])
 def firebase_fulfillment():
     """
@@ -159,6 +228,8 @@ def firebase_fulfillment():
         response = check_mobile(req)
     elif action == "save_mobile":
         response = save_mobile(req)
+    elif "validate_model_serial" in action:
+        response = validate_model_serial(req)
     elif action == "save_call_ticket":
         response = create_call_ticket(req)
     else:
