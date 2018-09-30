@@ -154,8 +154,10 @@ def validate_model_serial(data):
         if "visit_data" in i["name"] or "call_data" in i["name"]:
             product = i["parameters"]["product_type"]
             if "call_data" in i["name"]:
+                support_type = "_call"
                 follow_up_event = "confirm-call"
             else:
+                support_type = "_visit"
                 follow_up_event = "confirm-house"
 
     product_data = db.child("Products").get().val()
@@ -169,14 +171,14 @@ def validate_model_serial(data):
             else:
                 # Model number and serial number do not match with the product type.
                 message = "The model number you have entered is incorrect."
-                follow_up_event = "request_model_serial"
+                follow_up_event = "request_model_serial" + support_type
         else:
             # Model number is not matching with serial number
             message = "The serial number you have entered doesn't match with the product type."
-            follow_up_event = "request_model_serial"
+            follow_up_event = "request_model_serial" + support_type
     else:
         message = "The serial number you have entered is incorrect."
-        follow_up_event = "request_model_serial"
+        follow_up_event = "request_model_serial" + support_type
 
     response = {
         "fulfillmentText": message,
