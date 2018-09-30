@@ -154,6 +154,7 @@ def validate_model_serial(data):
             product = i["parameters"]["product_type"]
             issue_type = i["parameters"]["issue_type"]
             if "call_data" in i["name"]:
+                follow_up_event = "confirm-call"
                 free_date = i["parameters"]["free_date"]["date"]
                 free_time = i["parameters"]["free_time"]["time"]
                 confirmation_message = "Can you confirm the following:\n" + \
@@ -165,6 +166,7 @@ def validate_model_serial(data):
                                        "Free Time: " + free_time + "\n" + \
                                        "Free Date: " + free_date + "\n"
             else:
+                follow_up_event = "confirm-house"
                 confirmation_message = "Can you confirm the following:\n" + \
                                        "Support Type: House Visit\n" + \
                                        "Product Type: " + product + "\n" + \
@@ -172,11 +174,6 @@ def validate_model_serial(data):
                                        "Model Number: " + model_number + "\n" + \
                                        "Serial Number: " + serial_number + "\n"
             pass
-
-    if "house" in data["queryResult"]["action"]:
-        follow_up_event = "confirm-house"
-    else:
-        follow_up_event = "confirm-call"
 
     product_data = db.child("Products").get().val()
     if serial_number in product_data.keys():
