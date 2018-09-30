@@ -280,7 +280,7 @@ def choose_slot(data):
     for i in data["queryResult"]["outputContexts"]:
         if "ticket-id" in i["name"]:
             ticket_id = i["parameters"]["ticket_id"]
-            db.child("user_data").child(firebase_uid).child("Complaints").child(ticket_id).child("Time Slot Chosen").set(str(slot))
+            db.child("user_data").child(firebase_uid).child("Complaints").child(ticket_id).child("Time Slot Chosen").set(str(int(slot)))
             break
     response = {
         "fulfillmentText": "I have updated your preference."
