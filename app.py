@@ -358,6 +358,7 @@ def create_call_ticket(data):
         "Issue Type": raw_params["issue_type"],
         "Model Number": raw_params["model_number"],
         "Serial Number": raw_params["serial_number"],
+        "Description": "0",
         "Status": "Open",
         "Date": date,
         "Time Slot Chosen": "0",
