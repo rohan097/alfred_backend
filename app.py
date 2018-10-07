@@ -436,8 +436,8 @@ def create_ticket(data):
                        "Slot 3": {"Time": "0", "Date": "0"}},
         "Progress": "Under Review",
         "Free Time": {
-            "Date": ["0"],
-            "Time": ["0"],
+            "Date": "0",
+            "Time": "0",
         },
         "Details of Call": {
             "Time": "0",
