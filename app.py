@@ -250,23 +250,25 @@ def schedule_slot(data):
     firebase_uid = data["session"].split("/")[-1]
     db = firebase.database()
     ticket_id = data["queryResult"]["parameters"]["ticket_id"]
-    complaint = db.child("user_data").child(firebase_uid).child("Complaints").child(ticket_id).get().val()
-    print (complaint)
-    if complaint["Time Slots"]["Slot 1"]["Date"] == "0":
-        message = "No time slots have been allotted yet. You can either check back with me in some time or go to the " \
-                  "\"Tickets\" section of the app to stay updated. "
-    else:
-        message = "Available Time Slots: \n" + \
-                   "\t\tSlot 1 - " + \
-                   "\n\t\t\t\tDate: " + complaint["Time Slots"]["Slot 1"]["Date"] + \
-                   "\n\t\t\t\tTime: " + complaint["Time Slots"]["Slot 1"]["Time"] + \
-                   "\n\t\tSlot 2 - " + \
-                   "\n\t\t\t\tDate: " + complaint["Time Slots"]["Slot 2"]["Date"] + \
-                   "\n\t\t\t\tTime: " + complaint["Time Slots"]["Slot 2"]["Time"] + \
-                   "\n\t\tSlot 3 - " + \
-                   "\n\t\t\t\tDate: " + complaint["Time Slots"]["Slot 3"]["Date"] + \
-                   "\n\t\t\t\tTime: " + complaint["Time Slots"]["Slot 3"]["Time"] + "\n"
-        message += "Which time slot do you choose? Please enter \"1\" for Slot-1 and so on."
+    try:
+        complaint = db.child("user_data").child(firebase_uid).child("Complaints").child(ticket_id).get().val()
+        if complaint["Time Slots"]["Slot 1"]["Date"] == "0":
+            message = "No time slots have been allotted yet. You can either check back with me in some time or go to the " \
+                      "\"Tickets\" section of the app to stay updated. "
+        else:
+            message = "Available Time Slots: \n" + \
+                       "\t\tSlot 1 - " + \
+                       "\n\t\t\t\tDate: " + complaint["Time Slots"]["Slot 1"]["Date"] + \
+                       "\n\t\t\t\tTime: " + complaint["Time Slots"]["Slot 1"]["Time"] + \
+                       "\n\t\tSlot 2 - " + \
+                       "\n\t\t\t\tDate: " + complaint["Time Slots"]["Slot 2"]["Date"] + \
+                       "\n\t\t\t\tTime: " + complaint["Time Slots"]["Slot 2"]["Time"] + \
+                       "\n\t\tSlot 3 - " + \
+                       "\n\t\t\t\tDate: " + complaint["Time Slots"]["Slot 3"]["Date"] + \
+                       "\n\t\t\t\tTime: " + complaint["Time Slots"]["Slot 3"]["Time"] + "\n"
+            message += "Which time slot do you choose? Please enter \"1\" for Slot-1 and so on."
+    except:
+        message = "I think you have entered an incorrect Ticket ID."
     response = {
         "fulfillmentText": message
     }
@@ -353,6 +355,7 @@ def create_call_ticket(data):
         "Date": raw_params["free_date"]["date"]
     }
     ticket_params = {
+        "Agent": "None",
         "Product Type": raw_params["product_type"],
         "Type": "Phone Call",
         "Issue Type": raw_params["issue_type"],
@@ -365,7 +368,7 @@ def create_call_ticket(data):
         "Time Slots": {"Slot 1": {"Time": "0", "Date": "0"},
                        "Slot 2": {"Time": "0", "Date": "0"},
                        "Slot 3": {"Time": "0", "Date": "0"}},
-        "Progress": "Under review.",
+        "Progress": "Under Review",
         "Free Time": free_time,
         "Details of Call": {
             "Time": "0",
@@ -418,6 +421,7 @@ def create_ticket(data):
 
     raw_params = context['parameters']
     ticket_params = {
+        "Agent": "None",
         "Product Type": raw_params["product_type"],
         "Type": "House Call",
         "Issue Type": raw_params["issue_type"],
@@ -430,7 +434,7 @@ def create_ticket(data):
         "Time Slots": {"Slot 1": {"Time": "0", "Date": "0"},
                        "Slot 2": {"Time": "0", "Date": "0"},
                        "Slot 3": {"Time": "0", "Date": "0"}},
-        "Progress": "Under review.",
+        "Progress": "Under Review",
         "Free Time": {
             "Date": ["0"],
             "Time": ["0"],
