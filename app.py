@@ -190,6 +190,11 @@ def validate_model_serial(data):
 
 
 def view_tickets(data):
+    """
+    This function returns all the open tickets to dialogflow.
+    :param data:
+    :return:
+    """
     firebase_uid = data["session"].split('/')[-1]
     db = firebase.database()
     user_data = db.child("user_data").child(firebase_uid).child("Complaints").get().val()
@@ -234,6 +239,11 @@ def view_tickets(data):
 
 
 def delete_ticket(data):
+    """
+    This function deletes a ticket from the chatbot.
+    :param data:
+    :return:
+    """
     firebase_uid = data["session"].split('/')[-1]
     for i in data["queryResult"]["outputContexts"]:
         if "ticket_params" in i["name"]:
@@ -247,6 +257,12 @@ def delete_ticket(data):
 
 
 def schedule_slot(data):
+    """
+    This function displays the time slots available for
+    a particular ticket.
+    :param data:
+    :return:
+    """
     firebase_uid = data["session"].split("/")[-1]
     db = firebase.database()
     ticket_id = data["queryResult"]["parameters"]["ticket_id"]
@@ -276,6 +292,11 @@ def schedule_slot(data):
 
 
 def choose_slot(data):
+    """
+    This updates the time slot from the chatbot.
+    :param data:
+    :return:
+    """
     firebase_uid = data["session"].split("/")[-1]
     db = firebase.database()
     slot = data["queryResult"]["parameters"]["slot"]
@@ -460,6 +481,10 @@ def create_ticket(data):
 
 @app.route('/choosetimeslot/', methods=["POST"])
 def choose_time_slot():
+    """
+    This function updates the time slot as selected by the user.
+    :return:
+    """
     req = request.json
     firebase_uid = req["firebase_uid"]
     ticket_id = req["complaint_id"]
